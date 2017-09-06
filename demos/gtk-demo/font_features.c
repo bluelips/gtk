@@ -41,6 +41,8 @@ static const char *feature_names[num_features] = {
   "sups", "init", "medi", "fina", "isol", "ss01", "ss02", "ss03", "ss04", "ss05"
 };
 
+static void add_font_variations (GString *s);
+
 static void
 update_display (void)
 {
@@ -57,7 +59,10 @@ update_display (void)
 
   text = gtk_entry_get_text (GTK_ENTRY (entry));
 
-  font_desc = gtk_font_chooser_get_font (GTK_FONT_CHOOSER (font));
+  s = g_string_new ("");
+  g_string_append (s , gtk_font_chooser_get_font (GTK_FONT_CHOOSER (font)));
+  add_font_variations (s);
+  font_desc = g_string_free (s, FALSE);
 
   s = g_string_new ("");
 
@@ -108,6 +113,7 @@ update_display (void)
   else
     lang = NULL;
 
+g_print ("font desc: %s\nfont feature: %s\n", font_desc, font_settings);
   s = g_string_new ("");
   g_string_append_printf (s, "<span font_desc='%s' font_features='%s'", font_desc, font_settings);
   if (lang)
@@ -420,6 +426,8 @@ adjustment_changed (GtkAdjustment *adjustment,
   str = g_strdup_printf ("%g", gtk_adjustment_get_value (adjustment));
   gtk_entry_set_text (GTK_ENTRY (entry), str);
   g_free (str);
+
+  update_display ();
 }
 
 static void
@@ -434,6 +442,8 @@ entry_activated (GtkEntry *entry,
     gtk_adjustment_set_value (adjustment, value);
 }
 
+static void unset_instance (GtkAdjustment *adjustment);
+
 typedef struct {
   guint32 tag;
   GtkAdjustment *adjustment;
@@ -441,7 +451,27 @@ typedef struct {
 
 static GHashTable *axes;
 
-static void unset_instance (GtkAdjustment *adjustment);
+static void
+add_font_variations (GString *s)
+{
+  GHashTableIter iter;
+  Axis *axis;
+  char *sep = " @";
+
+  g_hash_table_iter_init (&iter, axes);
+  while (g_hash_table_iter_next (&iter, (gpointer *)NULL, (gpointer *)&axis))
+    {
+      char tag[5];
+      double value;
+
+      hb_tag_to_string (axis->tag, tag);
+      tag[4] = '\0';
+      value = gtk_adjustment_get_value (axis->adjustment);
+
+      g_string_append_printf (s, "%s%s=%g", sep, tag, value);
+      sep = ",";
+    }
+}
 
 static void
 add_axis (FT_Var_Axis *ax, int i)
