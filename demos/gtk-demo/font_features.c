@@ -113,7 +113,6 @@ update_display (void)
   else
     lang = NULL;
 
-g_print ("font desc: %s\nfont feature: %s\n", font_desc, font_settings);
   s = g_string_new ("");
   g_string_append_printf (s, "<span font_desc='%s' font_features='%s'", font_desc, font_settings);
   if (lang)
@@ -476,41 +475,42 @@ add_font_variations (GString *s)
 static void
 add_axis (FT_Var_Axis *ax, int i)
 {
-  GtkWidget *label;
+  GtkWidget *axis_label;
+  GtkWidget *axis_entry;
+  GtkWidget *axis_scale;
   GtkAdjustment *adjustment;
-  GtkWidget *scale;
   Axis *axis;
 
-  label = gtk_label_new (ax->name);
-  gtk_widget_set_halign (label, GTK_ALIGN_START);
-  gtk_widget_set_valign (label, GTK_ALIGN_BASELINE);
-  gtk_grid_attach (GTK_GRID (variations_grid), label, 0, i, 1, 1);
+  axis_label = gtk_label_new (ax->name);
+  gtk_widget_set_halign (axis_label, GTK_ALIGN_START);
+  gtk_widget_set_valign (axis_label, GTK_ALIGN_BASELINE);
+  gtk_grid_attach (GTK_GRID (variations_grid), axis_label, 0, i, 1, 1);
   adjustment = gtk_adjustment_new ((double)FixedToFloat(ax->def),
                                    (double)FixedToFloat(ax->minimum),
                                    (double)FixedToFloat(ax->maximum),
                                    1.0, 10.0, 0.0);
-  scale = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, adjustment);
-  gtk_scale_add_mark (GTK_SCALE (scale), (double)FixedToFloat(ax->def), GTK_POS_TOP, NULL);
-  gtk_widget_set_valign (scale, GTK_ALIGN_BASELINE);
-  gtk_widget_set_hexpand (scale, TRUE);
-  gtk_widget_set_size_request (scale, 100, -1);
-  gtk_scale_set_draw_value (GTK_SCALE (scale), FALSE);
-  gtk_grid_attach (GTK_GRID (variations_grid), scale, 1, i, 1, 1);
-  entry = gtk_entry_new ();
-  gtk_widget_set_valign (entry, GTK_ALIGN_BASELINE);
-  gtk_entry_set_width_chars (GTK_ENTRY (entry), 4);
-  gtk_grid_attach (GTK_GRID (variations_grid), entry, 2, i, 1, 1);
+  axis_scale = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, adjustment);
+  gtk_scale_add_mark (GTK_SCALE (axis_scale), (double)FixedToFloat(ax->def), GTK_POS_TOP, NULL);
+  gtk_widget_set_valign (axis_scale, GTK_ALIGN_BASELINE);
+  gtk_widget_set_hexpand (axis_scale, TRUE);
+  gtk_widget_set_size_request (axis_scale, 100, -1);
+  gtk_scale_set_draw_value (GTK_SCALE (axis_scale), FALSE);
+  gtk_grid_attach (GTK_GRID (variations_grid), axis_scale, 1, i, 1, 1);
+  axis_entry = gtk_entry_new ();
+  gtk_widget_set_valign (axis_entry, GTK_ALIGN_BASELINE);
+  gtk_entry_set_width_chars (GTK_ENTRY (axis_entry), 4);
+  gtk_grid_attach (GTK_GRID (variations_grid), axis_entry, 2, i, 1, 1);
 
   axis = g_new (Axis, 1);
   axis->tag = ax->tag;
   axis->adjustment = adjustment;
   g_hash_table_insert (axes, &axis->tag, axis);
 
-  adjustment_changed (adjustment, GTK_ENTRY (entry));
+  adjustment_changed (adjustment, GTK_ENTRY (axis_entry));
 
-  g_signal_connect (adjustment, "value-changed", G_CALLBACK (adjustment_changed), entry);
+  g_signal_connect (adjustment, "value-changed", G_CALLBACK (adjustment_changed), axis_entry);
   g_signal_connect (adjustment, "value-changed", G_CALLBACK (unset_instance), NULL);
-  g_signal_connect (entry, "activate", G_CALLBACK (entry_activated), adjustment);
+  g_signal_connect (axis_entry, "activate", G_CALLBACK (entry_activated), adjustment);
 }
 
 typedef struct {
