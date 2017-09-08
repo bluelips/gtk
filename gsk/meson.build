@@ -111,6 +111,7 @@ gsk_gen_headers = [ gskenum_h, ]
 gsk_deps = [
   graphene_dep,
   pango_dep,
+  harfbuzz_dep,
   cairo_dep,
   pixbuf_dep,
   libgdk_dep,

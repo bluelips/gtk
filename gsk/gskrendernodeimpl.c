@@ -27,6 +27,11 @@
 #include "gsktextureprivate.h"
 
 #include <cairo-ft.h>
+#if 0
+#include <hb-ot.h>
+#include <hb-ft.h>
+#include <pango/pangoft2.h>
+#endif
 
 static gboolean
 check_variant_type (GVariant *variant,
@@ -4040,9 +4045,38 @@ gsk_text_node_new (PangoFont        *font,
 {
   GskTextNode *self;
   PangoRectangle ink_rect;
+#if 0
+  FT_Face ft_face;
+  hb_font_t *hb_font;
+  hb_face_t *hb_face;
+  guint n_axes;
+  hb_ot_var_axis_t *axes;
+  int *values;
+  guint n_values;
+  int i;
+#endif
 
   pango_glyph_string_extents (glyphs, font, &ink_rect, NULL);
   pango_extents_to_pixels (&ink_rect, NULL);
+
+#if 0
+  ft_face = pango_fc_font_lock_face (PANGO_FC_FONT (font)),
+  hb_font = hb_ft_font_create (ft_face, NULL);
+  hb_face = hb_font_get_face (hb_font);
+  n_axes = hb_ot_var_get_axis_count (hb_face);
+  axes = g_new (hb_ot_var_axis_t, n_axes);
+  hb_ot_var_get_axes (hb_face, 0, &n_axes, axes);
+  values = hb_font_get_var_coords_normalized (hb_font, &n_values);
+  for (i = 0; i < n_values; i++)
+    {
+      hb_ot_var_axis_t *axis = &axes[i];
+      char tag[5];
+      hb_tag_to_string (axis->tag, tag);
+      tag[4] = 0;
+      g_print ("axis %s: %g - %g - %g: value %g\n",
+               tag, axis->min_value, axis->default_value, axis->max_value, ((double)values[i])/16384.);
+    }
+#endif
 
   /* Don't create nodes with empty bounds */
   if (ink_rect.width == 0 || ink_rect.height == 0)

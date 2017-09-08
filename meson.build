@@ -26,6 +26,7 @@ endif
 
 glib_req           = '>= @0@.@1@.@2@'.format(glib_major_req, glib_minor_req, glib_micro_req)
 pango_req          = '>= 1.37.3'
+harfbuzz_req       = '>= 1.4.2'
 atk_req            = '>= 2.15.1'
 cairo_req          = '>= 1.14.0'
 gdk_pixbuf_req     = '>= 2.30.0'
@@ -319,6 +320,7 @@ pango_dep      = dependency('pango', version: pango_req)
 pangoft_dep    = dependency('pangoft2', required: wayland_enabled or x11_enabled)
 cairo_dep      = dependency('cairo', version: cairo_req)
 pangocairo_dep = dependency('pangocairo', version: cairo_req)
+harfbuzz_dep   = dependency('harfbuzz', version: harfbuzz_req)
 cairogobj_dep  = dependency('cairo-gobject', version: cairo_req)
 pixbuf_dep     = dependency('gdk-pixbuf-2.0', version: gdk_pixbuf_req)
 epoxy_dep      = dependency('epoxy', version: epoxy_req,
